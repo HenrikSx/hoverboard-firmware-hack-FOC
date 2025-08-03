@@ -700,7 +700,7 @@ void standstillHold(void) {
       standstillAcv = 0;
     #endif
 
-    #ifndef(TANK_STEERING)
+    #if !defined(TANK_STEERING)
       if (!rtP_Left.b_cruiseCtrlEna) {                                  // If Stanstill in NOT Active -> try Activation
         if (((input1[inIdx].cmd > 50 || input2[inIdx].cmd < -50) && speedAvgAbs < 30) // Check if Brake is pressed AND measured speed is small
             || (input2[inIdx].cmd < 20 && speedAvgAbs < 5)) {           // OR Throttle is small AND measured speed is very small
