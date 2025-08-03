@@ -151,7 +151,11 @@ static uint8_t sideboard_leds_R;
 
 static int16_t    speed;                // local variable for speed. -1000 to 1000
 #ifndef VARIANT_TRANSPOTTER
+  static int16_t  speed_old = 0;                // local variable for speed. -1000 to 1000
   static int16_t  steer;                // local variable for steering. -1000 to 1000
+  static int16_t  steer_old = 0;                // local variable for steering. -1000 to 1000
+  static int16_t  cmdL_old = 0;                // 
+  static int16_t  cmdR_old = 0;                // 
   static int16_t  steerRateFixdt;       // local fixed-point variable for steering rate limiter
   static int16_t  speedRateFixdt;       // local fixed-point variable for speed rate limiter
   static int32_t  steerFixdt;           // local fixed-point variable for steering low-pass filter
@@ -290,9 +294,13 @@ int main(void) {
       }
       #endif
 
-      #ifdef ELECTRIC_BRAKE_ENABLE
-        electricBrake(speedBlend, MultipleTapBrake.b_multipleTap);  // Apply Electric Brake. Only available and makes sense for TORQUE Mode
+      #if defined(ELECTRIC_BRAKE_ENABLE) && !defined(TANK_STEERING)
+        electricBrake(input2[inIdx], speedBlend, MultipleTapBrake.b_multipleTap);  // Apply Electric Brake. Only available and makes sense for TORQUE Mode
       #endif
+     /* #if defined(ELECTRIC_BRAKE_ENABLE) && defined(TANK_STEERING)
+        electricBrake(input1[inIdx], speedBlend, input1[inIdx].cmd < 0);  // Apply Electric Brake. Only available and makes sense for TORQUE Mode
+        electricBrake(input2[inIdx], speedBlend, input2[inIdx].cmd < 0);  // Apply Electric Brake. Only available and makes sense for TORQUE Mode
+      #endif */
 
       #ifdef VARIANT_HOVERCAR
       if (inIdx == CONTROL_ADC) {                                   // Only use use implementation below if pedals are in use (ADC input)
@@ -343,6 +351,24 @@ int main(void) {
 
       #if defined(TANK_STEERING) && !defined(VARIANT_HOVERCAR) && !defined(VARIANT_SKATEBOARD) 
         // Tank steering (no mixing)
+        #if defined(ELECTRIC_BRAKE_ENABLE)
+          if(abs(cmdL_old) > abs(steer)){
+            steer_old = steer;
+            steer = steer - cmdL_old;
+            cmdL_old = steer_old;
+          }
+          else
+            cmdL_old = steer;
+          
+          if(abs(cmdR_old) > abs(speed)){
+            speed_old = speed;
+            speed = speed - cmdR_old;
+            cmdR_old = speed_old;
+          }
+          else
+            cmdR_old = speed;
+        #endif
+
         cmdL = steer; 
         cmdR = speed;
       #else 

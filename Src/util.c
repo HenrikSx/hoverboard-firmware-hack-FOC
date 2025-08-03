@@ -730,7 +730,7 @@ void standstillHold(void) {
  * Input: speedBlend = fixdt(0,16,15), reverseDir = {0, 1}
  * Output: input2.cmd (Throtle) with brake component included
  */
-void electricBrake(uint16_t speedBlend, uint8_t reverseDir) {
+void electricBrake(InputStruct *in, uint16_t speedBlend, uint8_t reverseDir) {
   #if defined(ELECTRIC_BRAKE_ENABLE) && (CTRL_TYP_SEL == FOC_CTRL) && (CTRL_MOD_REQ == TRQ_MODE)
     int16_t brakeVal;
 
@@ -747,14 +747,14 @@ void electricBrake(uint16_t speedBlend, uint8_t reverseDir) {
     }
 
     // Calculate the new input2.cmd with brake component included
-    if (input2[inIdx].cmd >= 0 && input2[inIdx].cmd < ELECTRIC_BRAKE_THRES) {
-      input2[inIdx].cmd = MAX(brakeVal, ((ELECTRIC_BRAKE_THRES - input2[inIdx].cmd) * brakeVal) / ELECTRIC_BRAKE_THRES);
-    } else if (input2[inIdx].cmd >= -ELECTRIC_BRAKE_THRES && input2[inIdx].cmd < 0) {
-      input2[inIdx].cmd = MIN(brakeVal, ((ELECTRIC_BRAKE_THRES + input2[inIdx].cmd) * brakeVal) / ELECTRIC_BRAKE_THRES);
-    } else if (input2[inIdx].cmd >= ELECTRIC_BRAKE_THRES) {
-      input2[inIdx].cmd = MAX(brakeVal, ((input2[inIdx].cmd - ELECTRIC_BRAKE_THRES) * INPUT_MAX) / (INPUT_MAX - ELECTRIC_BRAKE_THRES));
+    if (in->cmd >= 0 && in->cmd < ELECTRIC_BRAKE_THRES) {
+      in->cmd = MAX(brakeVal, ((ELECTRIC_BRAKE_THRES - in->cmd) * brakeVal) / ELECTRIC_BRAKE_THRES);
+    } else if (in->.cmd >= -ELECTRIC_BRAKE_THRES && in->cmd < 0) {
+      in->cmd = MIN(brakeVal, ((ELECTRIC_BRAKE_THRES + in->cmd) * brakeVal) / ELECTRIC_BRAKE_THRES);
+    } else if (in->cmd >= ELECTRIC_BRAKE_THRES) {
+      in.cmd = MAX(brakeVal, ((in->cmd - ELECTRIC_BRAKE_THRES) * INPUT_MAX) / (INPUT_MAX - ELECTRIC_BRAKE_THRES));
     } else {  // when (input2.cmd < -ELECTRIC_BRAKE_THRES)
-      input2[inIdx].cmd = MIN(brakeVal, ((input2[inIdx].cmd + ELECTRIC_BRAKE_THRES) * INPUT_MIN) / (INPUT_MIN + ELECTRIC_BRAKE_THRES));
+      in->cmd = MIN(brakeVal, ((in->cmd + ELECTRIC_BRAKE_THRES) * INPUT_MIN) / (INPUT_MIN + ELECTRIC_BRAKE_THRES));
     }
   #endif
 }
