@@ -669,50 +669,56 @@ void updateCurSpdLim(void) {
  * Output: standstillAcv
  */
 void standstillHold(void) {
-  #if defined(STANDSTILL_HOLD_ENABLE) && (CTRL_TYP_SEL == FOC_CTRL) && (CTRL_MOD_REQ != SPD_MODE)
-  if (!rtP_Left.b_cruiseCtrlEna   &&
-      abs(input1[inIdx].cmd) < 20 &&
-      abs(rtY_Left.n_mot) < 5      ) {  
-    rtP_Left.n_cruiseMotTgt   = 0;
-    rtP_Left.b_cruiseCtrlEna  = 1;
-  }
-  else {
-    rtP_Left.b_cruiseCtrlEna  = 0;
-  }
+  #if defined (STANDSTILL_HOLD_ENABLE) && (CTRL_TYP_SEL == FOC_CTRL) && (CTRL_MOD_REQ != SPD_MODE)
 
-  if (!rtP_Right.b_cruiseCtrlEna &&
-     abs(input2[inIdx].cmd) < 20 &&
-     abs(rtY_Right.n_mot) < 5     ) {  
-    rtP_Right.n_cruiseMotTgt   = 0;
-    rtP_Right.b_cruiseCtrlEna  = 1;
-  }
-  else {
-    rtP_Right.b_cruiseCtrlEna  = 0;
-  }
-
-  if( rtP_Right.b_cruiseCtrlEna || rtP_Left.b_cruiseCtrlEna)
-    standstillAcv = 1;
-  else 
-    standstillAcv = 0;
-  
-  
-  /*  if (!rtP_Left.b_cruiseCtrlEna) {                                  // If Stanstill in NOT Active -> try Activation
-      if (((input1[inIdx].cmd > 50 || input2[inIdx].cmd < -50) && speedAvgAbs < 30) // Check if Brake is pressed AND measured speed is small
-          || (input2[inIdx].cmd < 20 && speedAvgAbs < 5)) {           // OR Throttle is small AND measured speed is very small
+    #if defined(TANK_STEERING)
+      if (!rtP_Left.b_cruiseCtrlEna                    &&
+        input1[inIdx].cmd < (input1[inIdx].mid + 50) &&
+        input1[inIdx].cmd > (input1[inIdx].mid - 50) &&
+        abs(rtY_Left.n_mot) < 30                      ) {  
         rtP_Left.n_cruiseMotTgt   = 0;
-        rtP_Right.n_cruiseMotTgt  = 0;
         rtP_Left.b_cruiseCtrlEna  = 1;
-        rtP_Right.b_cruiseCtrlEna = 1;
-        standstillAcv = 1;
-      } 
-    }
-    else {                                                            // If Stanstill is Active -> try Deactivation
-      if (input1[inIdx].cmd < 20 && input2[inIdx].cmd > 50 && !cruiseCtrlAcv) { // Check if Brake is released AND Throttle is pressed AND no Cruise Control
-        rtP_Left.b_cruiseCtrlEna  = 0;
-        rtP_Right.b_cruiseCtrlEna = 0;
-        standstillAcv = 0;
       }
-    }*/
+      else {
+      rtP_Left.b_cruiseCtrlEna  = 0;
+      }
+
+      if (!rtP_Right.b_cruiseCtrlEna                   &&
+        input2[inIdx].cmd < (input1[inIdx].mid + 50) &&
+        input2[inIdx].cmd > (input1[inIdx].mid - 50) &&
+        abs(rtY_Right.n_mot) < 30                      ) {  
+        rtP_Right.n_cruiseMotTgt   = 0;
+        rtP_Right.b_cruiseCtrlEna  = 1;
+      }
+      else {
+        rtP_Right.b_cruiseCtrlEna  = 0;
+      }
+
+      if( rtP_Right.b_cruiseCtrlEna || rtP_Left.b_cruiseCtrlEna)
+        standstillAcv = 1;
+      else 
+      standstillAcv = 0;
+    #endif
+
+    #ifndef(TANK_STEERING)
+      if (!rtP_Left.b_cruiseCtrlEna) {                                  // If Stanstill in NOT Active -> try Activation
+        if (((input1[inIdx].cmd > 50 || input2[inIdx].cmd < -50) && speedAvgAbs < 30) // Check if Brake is pressed AND measured speed is small
+            || (input2[inIdx].cmd < 20 && speedAvgAbs < 5)) {           // OR Throttle is small AND measured speed is very small
+          rtP_Left.n_cruiseMotTgt   = 0;
+          rtP_Right.n_cruiseMotTgt  = 0;
+          rtP_Left.b_cruiseCtrlEna  = 1;
+          rtP_Right.b_cruiseCtrlEna = 1;
+          standstillAcv = 1;
+        } 
+      }
+      else {                                                            // If Stanstill is Active -> try Deactivation
+        if (input1[inIdx].cmd < 20 && input2[inIdx].cmd > 50 && !cruiseCtrlAcv) { // Check if Brake is released AND Throttle is pressed AND no Cruise Control
+          rtP_Left.b_cruiseCtrlEna  = 0;
+          rtP_Right.b_cruiseCtrlEna = 0;
+          standstillAcv = 0;
+        }
+      }
+    #endif
   #endif
 }
 
