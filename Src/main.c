@@ -297,10 +297,10 @@ int main(void) {
       #if defined(ELECTRIC_BRAKE_ENABLE) && !defined(TANK_STEERING)
         electricBrake(input2[inIdx], speedBlend, MultipleTapBrake.b_multipleTap);  // Apply Electric Brake. Only available and makes sense for TORQUE Mode
       #endif
-     /* #if defined(ELECTRIC_BRAKE_ENABLE) && defined(TANK_STEERING)
-        electricBrake(input1[inIdx], speedBlend, input1[inIdx].cmd < 0);  // Apply Electric Brake. Only available and makes sense for TORQUE Mode
-        electricBrake(input2[inIdx], speedBlend, input2[inIdx].cmd < 0);  // Apply Electric Brake. Only available and makes sense for TORQUE Mode
-      #endif */
+    /* #if defined(ELECTRIC_BRAKE_ENABLE) && defined(TANK_STEERING)
+        electricBrake(input1[inIdx], abs((uint16_t)(((CLAMP(rtY_Left.n_mot,10,60) - 10) << 15) / 50)), input1[inIdx].cmd < 0);  // Apply Electric Brake. Only available and makes sense for TORQUE Mode
+        electricBrake(input2[inIdx], abs((uint16_t)(((CLAMP(rtY_Right.n_mot,10,60) - 10) << 15) / 50)), input2[inIdx].cmd < 0);  // Apply Electric Brake. Only available and makes sense for TORQUE Mode
+      #endif*/
 
       #ifdef VARIANT_HOVERCAR
       if (inIdx == CONTROL_ADC) {                                   // Only use use implementation below if pedals are in use (ADC input)
@@ -352,7 +352,7 @@ int main(void) {
       #if defined(TANK_STEERING) && !defined(VARIANT_HOVERCAR) && !defined(VARIANT_SKATEBOARD) 
         // Tank steering (no mixing)
         #if defined(ELECTRIC_BRAKE_ENABLE)
-          if(abs(cmdL_old) > abs(steer)){
+          if(abs(cmdL_old) > abs(steer) && (abs(steer) - abs(cmdL_old) > 30)){
             steer_old = steer;
             steer = steer - cmdL_old;
             cmdL_old = steer_old;
@@ -360,7 +360,7 @@ int main(void) {
           else
             cmdL_old = steer;
           
-          if(abs(cmdR_old) > abs(speed)){
+          if(abs(cmdR_old) > abs(speed) && (abs(speed) - abs(cmdR_old) > 30)){
             speed_old = speed;
             speed = speed - cmdR_old;
             cmdR_old = speed_old;

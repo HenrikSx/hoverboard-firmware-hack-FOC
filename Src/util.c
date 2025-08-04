@@ -684,8 +684,8 @@ void standstillHold(void) {
       }
 
       if (!rtP_Right.b_cruiseCtrlEna                   &&
-        input2[inIdx].cmd < (input1[inIdx].mid + 50) &&
-        input2[inIdx].cmd > (input1[inIdx].mid - 50) &&
+        input2[inIdx].cmd < (input2[inIdx].mid + 50) &&
+        input2[inIdx].cmd > (input2[inIdx].mid - 50) &&
         abs(rtY_Right.n_mot) < 30                      ) {  
         rtP_Right.n_cruiseMotTgt   = 0;
         rtP_Right.b_cruiseCtrlEna  = 1;
